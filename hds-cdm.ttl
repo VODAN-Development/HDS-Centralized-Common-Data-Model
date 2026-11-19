@@ -1,6 +1,6 @@
-@prefix hds: <http://example.org/hds#> .
+@prefix hds: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/hds-cdm.ttl#> .
 @prefix fds: <http://example.org/fds#> .
-@prefix cdm: <https://github.com/VODAN-Development/HDS-Centralized-Common-Data-Model#> .
+@prefix shapes: <https://github.com/VODAN-Development/HDS-Centralized-Common-Data-Model#> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix dpv: <https://w3id.org/dpv#> .
@@ -20,9 +20,9 @@
     rdfs:label "HDS Centralized Common Data Model"@en ;
     dcterms:source "hds MIP.pdf" .
 
-# Local vocabulary. The hds and schema namespaces match existing HDS
-# application files. The PDF leaves fds and xx unresolved, so fds is
-# provisional and the xx properties use the existing hds namespace.
+# Local vocabulary. The hds namespace resolves to the published Turtle file.
+# The PDF leaves fds and xx unresolved. The fds namespace is provisional,
+# and the xx properties use the hds namespace.
 
 hds:Incident a owl:Class ;
     rdfs:label "Incident"@en ;
@@ -80,7 +80,7 @@ hds:weaponsUsed a owl:DatatypeProperty ; rdfs:label "weapons used"@en .
 # SHACL expresses the profile's expected value types. All properties are
 # optional because the PDF supplies no minimum cardinalities.
 
-cdm:IncidentShape a sh:NodeShape ;
+shapes:IncidentShape a sh:NodeShape ;
     sh:targetClass hds:Incident ;
     sh:property [
         sh:path hds:involves ;
@@ -96,12 +96,12 @@ cdm:IncidentShape a sh:NodeShape ;
     ] ;
     sh:property [ sh:path schema:startDate ; sh:datatype xsd:dateTime ] ;
     sh:property [ sh:path schema:endDate ; sh:datatype xsd:dateTime ] ;
-    sh:property cdm:Description ;
+    sh:property shapes:Description ;
     sh:property [ sh:path hds:confidentiality ; sh:datatype xsd:string ] ;
     sh:property [ sh:path hds:victimCount ; sh:datatype xsd:integer ] ;
     sh:property [ sh:path hds:status ; sh:datatype xsd:string ] .
 
-cdm:LocationShape a sh:NodeShape ;
+shapes:LocationShape a sh:NodeShape ;
     sh:targetClass dcterms:Location ;
     sh:property [
         sh:path hds:countryCode ;
@@ -109,18 +109,18 @@ cdm:LocationShape a sh:NodeShape ;
         sh:datatype xsd:string
     ] .
 
-cdm:AgentShape a sh:NodeShape ;
+shapes:AgentShape a sh:NodeShape ;
     sh:targetClass prov:Agent, foaf:Agent, schema:Person ;
     sh:property [ sh:path hds:actorType ; sh:datatype xsd:string ] ;
     sh:property [ sh:path foaf:name ; sh:datatype xsd:string ] .
 
-cdm:CampShape a sh:NodeShape ;
+shapes:CampShape a sh:NodeShape ;
     sh:targetClass fds:Camp ;
     sh:property [ sh:path schema:location ; sh:class dcterms:Location ] .
 
 # The PDF draws arrows from route to event. Model the route as the
 # event's location, consistent with the location property in the table.
-cdm:RouteEventShape a sh:NodeShape ;
+shapes:RouteEventShape a sh:NodeShape ;
     sh:targetClass fds:MigrationEvent, fds:HumanTraffickingEvent ;
     sh:property [
         sh:path schema:location ;
@@ -128,7 +128,7 @@ cdm:RouteEventShape a sh:NodeShape ;
         sh:description "A migration route may be the location of the event."@en
     ] .
 
-cdm:CampEventShape a sh:NodeShape ;
+shapes:CampEventShape a sh:NodeShape ;
     sh:targetClass fds:HumanRightsAbuse, fds:HumanitarianEvent ;
     sh:property [
         sh:path schema:location ;
@@ -136,34 +136,34 @@ cdm:CampEventShape a sh:NodeShape ;
         sh:description "An IDP or refugee camp may be the location of the event."@en
     ] .
 
-cdm:PoliticalEventShape a sh:NodeShape ;
+shapes:PoliticalEventShape a sh:NodeShape ;
     sh:targetClass fds:PoliticalEvent ;
     sh:property [ sh:path hds:outcome ; sh:datatype xsd:string ] .
 
-cdm:CasualtyEventShape a sh:NodeShape ;
+shapes:CasualtyEventShape a sh:NodeShape ;
     sh:targetClass fds:MigrationEvent, fds:HumanTraffickingEvent,
         fds:HumanRightsAbuse, fds:MilitaryEvent, fds:HumanitarianEvent ;
     sh:property [ sh:path hds:casualties ; sh:datatype xsd:integer ] .
 
-cdm:MilitaryEventShape a sh:NodeShape ;
+shapes:MilitaryEventShape a sh:NodeShape ;
     sh:targetClass fds:MilitaryEvent ;
     sh:property [ sh:path hds:weaponsUsed ; sh:datatype xsd:string ] .
 
 # The class list's dvp:Consent is a typo for dpv:Consent.
-cdm:ConsentShape a sh:NodeShape ;
+shapes:ConsentShape a sh:NodeShape ;
     sh:targetClass dpv:Consent ;
     sh:property [ sh:path hds:hasDataOwner ; sh:class prov:Agent ] ;
     sh:property [ sh:path hds:hasDataUser ; sh:class prov:Agent ] ;
     sh:property [ sh:path hds:hasPurpose ; sh:class dpv:Purpose ] ;
-    sh:property cdm:Restriction .
+    sh:property shapes:Restriction .
 
 # The table attaches restrictions to consent and the diagram attaches
 # them to the data owner. Both placements are optional.
-cdm:DataOwnerShape a sh:NodeShape ;
+shapes:DataOwnerShape a sh:NodeShape ;
     sh:targetObjectsOf hds:hasDataOwner ;
-    sh:property cdm:Restriction .
+    sh:property shapes:Restriction .
 
-cdm:Restriction a sh:PropertyShape ;
+shapes:Restriction a sh:PropertyShape ;
     sh:path hds:hasRestriction ;
     sh:description "Use a DUO data use modifier IRI for the diagram's usage restriction."@en ;
     sh:nodeKind sh:IRI ;
@@ -175,7 +175,7 @@ cdm:Restriction a sh:PropertyShape ;
         ] ] ]
     ) .
 
-cdm:CatalogMetadataShape a sh:NodeShape ;
+shapes:CatalogMetadataShape a sh:NodeShape ;
     sh:targetClass dcat:Catalog, dcat:Dataset ;
     sh:property [ sh:path dcterms:publisher ; sh:class foaf:Agent ] ;
     sh:property [ sh:path dcterms:accessRights ; sh:class dcterms:RightsStatement ] ;
@@ -188,34 +188,34 @@ cdm:CatalogMetadataShape a sh:NodeShape ;
     sh:property [ sh:path dcat:contactPoint ; sh:class vcard:Kind ] ;
     sh:property [ sh:path dcat:service ; sh:class dcat:DataService ] .
 
-cdm:DatasetShape a sh:NodeShape ;
+shapes:DatasetShape a sh:NodeShape ;
     sh:targetClass dcat:Dataset ;
     sh:property [ sh:path dcterms:isPartOf ; sh:class dcat:Catalog ] ;
     sh:property [ sh:path dcat:distribution ; sh:class dcat:Distribution ] .
 
 # A SPARQL endpoint is a data service. Describe it on a catalog via
 # dcat:service or link it from a distribution via dcat:accessService.
-cdm:DistributionShape a sh:NodeShape ;
+shapes:DistributionShape a sh:NodeShape ;
     sh:targetClass dcat:Distribution ;
     sh:property [ sh:path dcat:accessService ; sh:class dcat:DataService ] .
 
-cdm:DataServiceShape a sh:NodeShape ;
+shapes:DataServiceShape a sh:NodeShape ;
     sh:targetClass dcat:DataService ;
     sh:property [ sh:path dcat:endpointURL ; sh:nodeKind sh:IRI ] .
 
-cdm:ResourceMetadataShape a sh:NodeShape ;
+shapes:ResourceMetadataShape a sh:NodeShape ;
     sh:targetClass dcat:Catalog, dcat:Dataset, dcat:Distribution, fds:Report ;
-    sh:property cdm:Description ;
+    sh:property shapes:Description ;
     sh:property [ sh:path prov:generatedAtTime ; sh:datatype xsd:dateTime ] ;
     sh:property [ sh:path schema:identifier ; sh:datatype xsd:anyURI ] ;
     sh:property [ sh:path dcterms:title ; sh:datatype xsd:string ] ;
     sh:property [ sh:path dcterms:identifier ; sh:datatype xsd:string ] .
 
-cdm:LabelShape a sh:NodeShape ;
+shapes:LabelShape a sh:NodeShape ;
     sh:targetClass hds:Incident, fds:Report, dcterms:Location, skos:Concept,
         prov:Agent, foaf:Agent, dcat:Catalog, dcat:Dataset, dcat:Distribution ;
     sh:property [ sh:path rdfs:label ; sh:datatype xsd:string ] .
 
-cdm:Description a sh:PropertyShape ;
+shapes:Description a sh:PropertyShape ;
     sh:path dcterms:description ;
     sh:datatype xsd:string .
