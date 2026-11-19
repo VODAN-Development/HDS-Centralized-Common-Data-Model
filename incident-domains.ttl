@@ -1,0 +1,45 @@
+@prefix hdsdom: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/incident-domains.ttl#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# Use these concepts as values of hds:incidentDomain. An incident can
+# have more than one domain.
+
+hdsdom:IncidentDomains a skos:ConceptScheme ;
+    dcterms:title "HDS incident domains"@en ;
+    skos:hasTopConcept hdsdom:environmental, hdsdom:humanTrafficking,
+        hdsdom:humanitarian, hdsdom:humanRightsAbuse, hdsdom:migration,
+        hdsdom:military, hdsdom:political, hdsdom:sexualViolence .
+
+hdsdom:environmental a skos:Concept ;
+    skos:prefLabel "Environmental event"@en ;
+    skos:inScheme hdsdom:IncidentDomains .
+
+hdsdom:humanTrafficking a skos:Concept ;
+    skos:prefLabel "Human trafficking"@en ;
+    skos:inScheme hdsdom:IncidentDomains .
+
+hdsdom:humanitarian a skos:Concept ;
+    skos:prefLabel "Humanitarian event"@en ;
+    skos:inScheme hdsdom:IncidentDomains .
+
+hdsdom:humanRightsAbuse a skos:Concept ;
+    skos:prefLabel "Human rights abuse"@en ;
+    skos:inScheme hdsdom:IncidentDomains .
+
+hdsdom:migration a skos:Concept ;
+    skos:prefLabel "Migration event"@en ;
+    skos:inScheme hdsdom:IncidentDomains .
+
+hdsdom:military a skos:Concept ;
+    skos:prefLabel "Military event"@en ;
+    skos:inScheme hdsdom:IncidentDomains .
+
+hdsdom:political a skos:Concept ;
+    skos:prefLabel "Political event"@en ;
+    skos:inScheme hdsdom:IncidentDomains .
+
+hdsdom:sexualViolence a skos:Concept ;
+    skos:prefLabel "Sexual violence"@en ;
+    skos:inScheme hdsdom:IncidentDomains .
+
