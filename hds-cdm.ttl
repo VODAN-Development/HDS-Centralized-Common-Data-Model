@@ -27,7 +27,9 @@ hds:Incident a owl:Class ;
     rdfs:subClassOf schema:Event .
 
 # Application specific terms (situation report)
-hds:Report a owl:Class ; rdfs:label "Situation report"@en .
+hds:Report a owl:Class ; 
+    rdfs:label "Situation report"@en ;
+    dcterms:isPartOf hds:Incident .
 hds:Camp a owl:Class ;
     rdfs:label "IDP or refugee camp"@en ;
     rdfs:subClassOf dcterms:Location .
