@@ -1,0 +1,69 @@
+@prefix hdsDomain: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/incident-domains.ttl#> .
+@prefix hds: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/hds-cdm.ttl#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix shapes: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/incident-domains-shapes.ttl#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# Validate incident-domains.ttl.
+# Additional domains and translations are allowed.
+
+shapes:IncidentDomainSchemeShape a sh:NodeShape ;
+    sh:targetNode hdsDomain:IncidentDomains ;
+    sh:nodeKind sh:IRI ;
+    sh:class skos:ConceptScheme ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+        sh:message "The incident-domain scheme needs a language-tagged title, with at most one title per language."@en
+    ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+        sh:message "Descriptions must be language-tagged, with at most one description per language."@en
+    ] ;
+    sh:property [
+        sh:path skos:hasTopConcept ;
+        sh:minCount 1 ;
+        sh:node shapes:IncidentDomainConceptShape ;
+        sh:message "Each top concept must be an IRI identifying a labelled concept in the incident-domain scheme."@en
+    ] .
+
+shapes:IncidentDomainConceptShape a sh:NodeShape ;
+    # Relationship targets also catch concepts whose rdf:type was omitted.
+    sh:targetClass skos:Concept ;
+    sh:targetSubjectsOf skos:inScheme ;
+    sh:targetObjectsOf skos:hasTopConcept ;
+    sh:nodeKind sh:IRI ;
+    sh:class skos:Concept ;
+    sh:property [
+        sh:path hds:applicableProperty ;
+        sh:nodeKind sh:IRI ;
+        sh:or ( [ sh:class rdf:Property ] [ sh:class owl:DatatypeProperty ]
+            [ sh:class owl:ObjectProperty ] [ sh:class owl:AnnotationProperty ] ) ;
+        sh:message "Applicable properties must be IRIs with an explicit RDF or OWL property declaration in the data graph."@en
+    ] ;
+    sh:property [
+        sh:path skos:prefLabel ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+        sh:message "Each incident domain needs a language-tagged preferred label, with at most one preferred label per language."@en
+    ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+        sh:message "Descriptions must be language-tagged, with at most one description per language."@en
+    ] ;
+    sh:property [
+        sh:path skos:inScheme ;
+        sh:nodeKind sh:IRI ;
+        sh:hasValue hdsDomain:IncidentDomains ;
+        sh:message "Each incident domain must belong to hdsDomain:IncidentDomains."@en
+    ] .

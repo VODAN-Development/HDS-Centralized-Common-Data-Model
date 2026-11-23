@@ -1,45 +1,60 @@
-@prefix hdsdom: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/incident-domains.ttl#> .
+@prefix hdsDomain: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/incident-domains.ttl#> .
+@prefix hds: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/hds-cdm.ttl#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 
-# Use these concepts as values of hds:incidentDomain. An incident can
-# have more than one domain.
+# Use these concepts as values of hds:incidentDomain. An incident can have more than one domain.
 
-hdsdom:IncidentDomains a skos:ConceptScheme ;
+hdsDomain:IncidentDomains a skos:ConceptScheme ;
     dcterms:title "HDS incident domains"@en ;
-    skos:hasTopConcept hdsdom:environmental, hdsdom:humanTrafficking,
-        hdsdom:humanitarian, hdsdom:humanRightsAbuse, hdsdom:migration,
-        hdsdom:military, hdsdom:political, hdsdom:sexualViolence .
+    dcterms:description "A controlled vocabulary for classifying HDS incidents by domain. An incident may have multiple domains."@en ;
+    skos:hasTopConcept hdsDomain:environmental, hdsDomain:humanTrafficking,
+        hdsDomain:humanitarian, hdsDomain:humanRightsAbuse, hdsDomain:migration,
+        hdsDomain:military, hdsDomain:political, hdsDomain:sexualViolence .
 
-hdsdom:environmental a skos:Concept ;
+hdsDomain:environmental a skos:Concept ;
     skos:prefLabel "Environmental event"@en ;
-    skos:inScheme hdsdom:IncidentDomains .
+    dcterms:description "An incident involving natural hazards, environmental degradation, or damage to ecosystems."@en ;
+    skos:inScheme hdsDomain:IncidentDomains .
 
-hdsdom:humanTrafficking a skos:Concept ;
+hdsDomain:humanTrafficking a skos:Concept ;
     skos:prefLabel "Human trafficking"@en ;
-    skos:inScheme hdsdom:IncidentDomains .
+    dcterms:description "An incident involving the recruitment, movement, harbouring, or receipt of people for exploitation through coercion, deception, or abuse of vulnerability, including child trafficking for which such means are not required."@en ;
+    hds:applicableProperty hds:casualties ;
+    skos:inScheme hdsDomain:IncidentDomains .
 
-hdsdom:humanitarian a skos:Concept ;
+hdsDomain:humanitarian a skos:Concept ;
     skos:prefLabel "Humanitarian event"@en ;
-    skos:inScheme hdsdom:IncidentDomains .
+    dcterms:description "An incident affecting people's safety, basic needs, or access to essential services that creates or worsens a need for humanitarian assistance."@en ;
+    hds:applicableProperty hds:casualties ;
+    skos:inScheme hdsDomain:IncidentDomains .
 
-hdsdom:humanRightsAbuse a skos:Concept ;
+hdsDomain:humanRightsAbuse a skos:Concept ;
     skos:prefLabel "Human rights abuse"@en ;
-    skos:inScheme hdsdom:IncidentDomains .
+    dcterms:description "An incident involving reported harm to or infringement of people's human rights and fundamental freedoms."@en ;
+    hds:applicableProperty hds:casualties ;
+    skos:inScheme hdsDomain:IncidentDomains .
 
-hdsdom:migration a skos:Concept ;
+hdsDomain:migration a skos:Concept ;
     skos:prefLabel "Migration event"@en ;
-    skos:inScheme hdsdom:IncidentDomains .
+    dcterms:description "An incident related to the movement of people within a country or across borders, including displacement, transit, arrival, or return."@en ;
+    hds:applicableProperty hds:casualties ;
+    skos:inScheme hdsDomain:IncidentDomains .
 
-hdsdom:military a skos:Concept ;
+hdsDomain:military a skos:Concept ;
     skos:prefLabel "Military event"@en ;
-    skos:inScheme hdsdom:IncidentDomains .
+    dcterms:description "An incident involving military operations, armed hostilities, or activities of armed forces or armed groups."@en ;
+    hds:applicableProperty hds:weaponsUsed, hds:casualties ;
+    skos:inScheme hdsDomain:IncidentDomains .
 
-hdsdom:political a skos:Concept ;
+hdsDomain:political a skos:Concept ;
     skos:prefLabel "Political event"@en ;
-    skos:inScheme hdsdom:IncidentDomains .
+    dcterms:description "An incident related to governance, political participation, elections, or the exercise of political power."@en ;
+    hds:applicableProperty hds:outcome ;
+    skos:inScheme hdsDomain:IncidentDomains .
 
-hdsdom:sexualViolence a skos:Concept ;
+hdsDomain:sexualViolence a skos:Concept ;
     skos:prefLabel "Sexual violence"@en ;
-    skos:inScheme hdsdom:IncidentDomains .
+    dcterms:description "An incident involving a sexual act or attempted sexual act without freely given consent, including acts committed through force, threats, coercion, or abuse of power."@en ;
+    skos:inScheme hdsDomain:IncidentDomains .
 
