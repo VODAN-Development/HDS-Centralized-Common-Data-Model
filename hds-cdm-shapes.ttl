@@ -1,11 +1,9 @@
 @prefix hds: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/hds-cdm.ttl#> .
-@prefix hdsDomain: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/incident-domains.ttl#> .
 @prefix shapes: <https://github.com/VODAN-Development/HDS-Centralized-Common-Data-Model#> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix dpv: <https://w3id.org/dpv#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
-@prefix obo: <http://purl.obolibrary.org/obo/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -13,7 +11,6 @@
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
 @prefix odrl: <http://www.w3.org/ns/odrl/2/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -26,21 +23,21 @@ shapes:IncidentShape a sh:NodeShape ;
         shapes:MilitaryIncidentShape ;
     sh:property [
         sh:path hds:involves ;
-        sh:or ( [ sh:class prov:Agent ] [ sh:class schema:Person ] )
+        sh:class prov:Agent
     ] ;
     sh:property [
         sh:path schema:location ;
         sh:class dcterms:Location ;
-        sh:description "A migration route may locate a migration or human trafficking incident. An IDP or refugee camp may locate a human rights abuse or humanitarian incident."@en
+        sh:description "An incident may reference geographical locations. Locations are optional and repeatable."@en
     ] ;
-    # Load incident-domains.ttl with the data for the class and scheme checks.
+    # Load hds-cdm.ttl with the data for the class and scheme checks.
     sh:property [
         sh:path hds:incidentDomain ;
         sh:nodeKind sh:IRI ;
         sh:class skos:Concept ;
         sh:property [
             sh:path skos:inScheme ;
-            sh:hasValue hdsDomain:IncidentDomains
+            sh:hasValue hds:incidentDomainScheme
         ]
     ] ;
     sh:property [ sh:path hds:reportedBy ; sh:class prov:Agent ] ;
@@ -56,13 +53,29 @@ shapes:IncidentShape a sh:NodeShape ;
     sh:property [ sh:path hds:status ; sh:datatype xsd:string ] .
 
 shapes:AgentShape a sh:NodeShape ;
-    sh:targetClass prov:Agent, foaf:Agent, schema:Person ;
+    sh:targetClass prov:Agent ;
     sh:property [ sh:path hds:actorType ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path rdfs:label ; sh:node shapes:TextLiteral ] ;
     sh:property [ sh:path foaf:name ; sh:node shapes:TextLiteral ] .
 
 shapes:CampShape a sh:NodeShape ;
     sh:targetClass hds:Camp ;
+    sh:description "Camp instances may reference geographical locations. These are distinct from the class-level links to incident-domain concepts."@en ;
     sh:property [ sh:path schema:location ; sh:class dcterms:Location ] .
+
+shapes:MigrationRouteShape a sh:NodeShape ;
+    sh:targetClass hds:MigrationRoute ;
+    sh:description "Route instances may reference geographical locations. These are distinct from the class-level links to incident-domain concepts."@en ;
+    sh:property [ sh:path schema:location ; sh:class dcterms:Location ] .
+
+shapes:LocationDomainLinksShape a sh:NodeShape ;
+    sh:targetNode hds:Camp, hds:MigrationRoute ;
+    sh:property [
+        sh:path schema:location ;
+        sh:nodeKind sh:IRI ;
+        sh:class skos:Concept ;
+        sh:property [ sh:path skos:inScheme ; sh:hasValue hds:incidentDomainScheme ]
+    ] .
 
 # These reusable shapes check field types on every incident, regardless of tag.
 # Applicable-property annotations describe relevance, not permission or requiredness.
@@ -75,86 +88,44 @@ shapes:CasualtyIncidentShape a sh:NodeShape ;
 shapes:MilitaryIncidentShape a sh:NodeShape ;
     sh:property [ sh:path hds:weaponsUsed ; sh:datatype xsd:string ] .
 
-# Role names remain provisional; no publisher/owner/consent-giver equivalence.
+# Consent assignees use the same agent class as other actor references.
 shapes:ConsentShape a sh:NodeShape ;
     sh:targetClass dpv:Consent ;
-    sh:property [ sh:path hds:hasDataOwner ; sh:class prov:Agent ] ;
-    sh:property [ sh:path hds:hasDataUser ; sh:class prov:Agent ] ;
+    sh:property [ sh:path odrl:assignee ; sh:class prov:Agent ] ;
+    sh:property [ sh:path dcterms:accessRights ; sh:class prov:Agent ] ;
     sh:property [ sh:path dpv:hasPurpose ; sh:class dpv:Purpose ] ;
-    sh:property [ sh:path dcterms:publisher ; sh:node shapes:AgentReference ] ;
-    sh:property [ sh:path dcterms:accessRights ; sh:class dcterms:RightsStatement ] ;
-    sh:property shapes:Restriction .
+    sh:property [ sh:path dcterms:publisher ; sh:node shapes:PublisherAgentReference ] .
 
-# Legacy restriction placement remains accepted while governance is refined.
-shapes:DataOwnerShape a sh:NodeShape ;
-    sh:targetObjectsOf hds:hasDataOwner ;
-    sh:property shapes:Restriction .
-
-shapes:Restriction a sh:PropertyShape ;
-    sh:path hds:hasRestriction ;
-    sh:description "Reference a documented usage restriction. DUO is supported when appropriate but is not mandatory."@en ;
-    sh:nodeKind sh:IRI .
-
-shapes:AgentReference a sh:NodeShape ;
+# All agent roles, including publishers, use the same PROV class.
+shapes:PublisherAgentReference a sh:NodeShape ;
+    sh:description "Publisher references must be typed as prov:Agent."@en ;
     sh:nodeKind sh:BlankNodeOrIRI ;
-    sh:or ( [ sh:class prov:Agent ] [ sh:class foaf:Agent ]
-        [ sh:class schema:Person ] [ sh:class schema:Organization ] ) .
+    sh:node shapes:AgentShape ;
+    sh:class prov:Agent .
 
-# Validate ODRL party values without treating them as generic HDS data users.
-# Full ODRL policy structure requires a separate policy profile.
-shapes:PolicyPartyShape a sh:NodeShape ;
-    sh:targetSubjectsOf odrl:assignee, odrl:assigner ;
-    sh:property [ sh:path odrl:assignee ; sh:class odrl:Party ] ;
-    sh:property [ sh:path odrl:assigner ; sh:class odrl:Party ] .
-
-# Dataset access status, license and policy are independent relationships.
+# License metadata applies to catalogues and datasets.
+# Purpose and policy links to governance resources are not part of this profile.
 shapes:RightsMetadataShape a sh:NodeShape ;
-    sh:targetClass dcat:Catalog, dcat:Dataset, dcat:Distribution,
-        dcat:DataService, dpv:Consent ;
-    sh:property [ sh:path dcterms:license ; sh:nodeKind sh:IRI ] ;
-    sh:property [ sh:path dcterms:accessRights ; sh:class dcterms:RightsStatement ] ;
-    sh:property [ sh:path odrl:hasPolicy ; sh:class odrl:Policy ] ;
-    sh:property [ sh:path dpv:hasPurpose ; sh:class dpv:Purpose ] ;
-    sh:property shapes:Restriction .
-
-shapes:ReportShape a sh:NodeShape ;
-    sh:targetClass hds:Report ;
-    sh:property [ sh:path dcterms:subject ; sh:class hds:Incident ] .
+    sh:targetClass dcat:Catalog, dcat:Dataset ;
+    sh:property [ sh:path dcterms:license ; sh:nodeKind sh:IRI ; sh:class dcterms:RightsStatement ] .
 
 shapes:CatalogMetadataShape a sh:NodeShape ;
     sh:targetClass dcat:Catalog, dcat:Dataset ;
-    sh:property [ sh:path dcterms:publisher ; sh:node shapes:AgentReference ] ;
-    sh:property [ sh:path dcterms:accessRights ; sh:class dcterms:RightsStatement ] ;
-    sh:property [ sh:path dcterms:license ; sh:nodeKind sh:IRI ] ;
+    sh:property [ sh:path dcterms:publisher ; sh:node shapes:PublisherAgentReference ] ;
+    sh:property [ sh:path dcterms:license ; sh:nodeKind sh:IRI ; sh:class dcterms:RightsStatement ] ;
     sh:property [ sh:path dcterms:conformsTo ; sh:nodeKind sh:IRI ] ;
     sh:property [ sh:path dcterms:language ; sh:nodeKind sh:IRI ] ;
     # Version labels are literals. dcterms:hasVersion links to a resource.
     sh:property [ sh:path dcat:version ; sh:datatype xsd:string ] ;
-    sh:property [ sh:path dcterms:hasVersion ; sh:nodeKind sh:BlankNodeOrIRI ] ;
-    sh:property [ sh:path dcat:contactPoint ; sh:class vcard:Kind ] .
-
-shapes:CatalogShape a sh:NodeShape ;
-    sh:targetClass dcat:Catalog ;
-    sh:property [ sh:path dcat:service ; sh:class dcat:DataService ] .
+    sh:property [ sh:path dcterms:hasVersion ; sh:nodeKind sh:BlankNodeOrIRI ] .
 
 shapes:DatasetShape a sh:NodeShape ;
     sh:targetClass dcat:Dataset ;
     sh:property [ sh:path dcterms:isPartOf ; sh:class dcat:Catalog ] ;
     sh:property [ sh:path dcat:distribution ; sh:class dcat:Distribution ] .
 
-# A SPARQL endpoint is a data service. Describe it on a catalog via
-# dcat:service or link it from a distribution via dcat:accessService.
-shapes:DistributionShape a sh:NodeShape ;
-    sh:targetClass dcat:Distribution ;
-    sh:property [ sh:path dcat:accessService ; sh:class dcat:DataService ] .
-
-shapes:DataServiceShape a sh:NodeShape ;
-    sh:targetClass dcat:DataService ;
-    sh:property [ sh:path dcat:servesDataset ; sh:class dcat:Dataset ] ;
-    sh:property [ sh:path dcat:endpointURL ; sh:nodeKind sh:IRI ] .
-
 shapes:ResourceMetadataShape a sh:NodeShape ;
-    sh:targetClass dcat:Catalog, dcat:Dataset, dcat:Distribution, dcat:DataService, hds:Report ;
+    sh:targetClass dcat:Catalog, dcat:Dataset, dcat:Distribution, hds:Report ;
     sh:property shapes:Description ;
     sh:property [ sh:path prov:generatedAtTime ; sh:datatype xsd:dateTime ] ;
     sh:property [ sh:path schema:identifier ; sh:datatype xsd:anyURI ] ;
@@ -163,7 +134,7 @@ shapes:ResourceMetadataShape a sh:NodeShape ;
 
 shapes:LabelShape a sh:NodeShape ;
     sh:targetClass hds:Incident, hds:Report, dcterms:Location, skos:Concept,
-        prov:Agent, foaf:Agent, dcat:Catalog, dcat:Dataset, dcat:Distribution ;
+        prov:Agent, dcat:Catalog, dcat:Dataset, dcat:Distribution ;
     sh:property [ sh:path rdfs:label ; sh:node shapes:TextLiteral ] .
 
 shapes:Description a sh:PropertyShape ;
@@ -175,3 +146,65 @@ shapes:TextLiteral a sh:NodeShape ;
         [ sh:datatype xsd:string ]
         [ sh:datatype rdf:langString ]
     ) .
+
+# Incident-domain SHACL validation
+# Validate the incident-domain vocabulary in hds-cdm.ttl.
+# Additional domains and translations are allowed.
+
+hds:IncidentDomainSchemeShape a sh:NodeShape ;
+    sh:targetNode hds:incidentDomainScheme ;
+    sh:nodeKind sh:IRI ;
+    sh:class skos:ConceptScheme ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+        sh:message "The incident-domain scheme needs a language-tagged title, with at most one title per language."@en
+    ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+        sh:message "Descriptions must be language-tagged, with at most one description per language."@en
+    ] ;
+    sh:property [
+        sh:path skos:hasTopConcept ;
+        sh:minCount 1 ;
+        sh:node hds:IncidentDomainConceptShape ;
+        sh:message "Each top concept must be an IRI identifying a labelled concept in the incident-domain scheme."@en
+    ] .
+
+hds:IncidentDomainConceptShape a sh:NodeShape ;
+    # Relationship targets also catch concepts whose rdf:type was omitted.
+    sh:targetClass skos:Concept ;
+    sh:targetSubjectsOf skos:inScheme ;
+    sh:targetObjectsOf skos:hasTopConcept ;
+    sh:nodeKind sh:IRI ;
+    sh:class skos:Concept ;
+    sh:property [
+        sh:path hds:applicableProperty ;
+        sh:nodeKind sh:IRI ;
+        sh:or ( [ sh:class rdf:Property ] [ sh:class owl:DatatypeProperty ]
+            [ sh:class owl:ObjectProperty ] [ sh:class owl:AnnotationProperty ] ) ;
+        sh:message "Applicable properties must be IRIs with an explicit RDF or OWL property declaration in the data graph."@en
+    ] ;
+    sh:property [
+        sh:path skos:prefLabel ;
+        sh:minCount 1 ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+        sh:message "Each incident domain needs a language-tagged preferred label, with at most one preferred label per language."@en
+    ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+        sh:message "Descriptions must be language-tagged, with at most one description per language."@en
+    ] ;
+    sh:property [
+        sh:path skos:inScheme ;
+        sh:nodeKind sh:IRI ;
+        sh:hasValue hds:incidentDomainScheme ;
+        sh:message "Each incident domain must belong to hds:incidentDomainScheme."@en
+    ] .

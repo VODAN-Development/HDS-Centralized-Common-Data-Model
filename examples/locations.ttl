@@ -1,0 +1,20 @@
+@prefix ex: <https://example.org/> .
+@prefix hds: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/hds-cdm.ttl#> .
+@prefix schema: <http://schema.org/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Class-to-domain schema:location links are declared in hds-cdm.ttl.
+ex:incident1 a hds:Incident ;
+    hds:incidentDomain hds:migration, hds:humanTrafficking .
+ex:routeA a hds:MigrationRoute ; rdfs:label "Migration route A"@en .
+
+ex:incident2 a hds:Incident ;
+    hds:incidentDomain hds:humanitarian, hds:humanRightsAbuse .
+ex:campA a hds:Camp ; rdfs:label "Refugee camp A"@en .
+
+# Incidents may still reference geographical locations.
+ex:incident3 a hds:Incident ;
+    hds:incidentDomain hds:humanitarian, hds:migration ;
+    schema:location ex:townA .
+ex:townA a dcterms:Location ; rdfs:label "Town A"@en .

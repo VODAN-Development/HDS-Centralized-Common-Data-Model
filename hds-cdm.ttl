@@ -1,53 +1,108 @@
 @prefix hds: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/hds-cdm.ttl#> .
-@prefix hdsDomain: <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/incident-domains.ttl#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix dpv: <https://w3id.org/dpv#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix schema: <http://schema.org/> .
 
 <https://vodan-development.github.io/HDS-Centralized-Common-Data-Model/hds-cdm.ttl>
     a owl:Ontology ;
     rdfs:label "HDS Centralized Common Data Model"@en ;
     dcterms:source "HDS MIP_v2.pdf" ;
-    owl:versionInfo "Development profile based on V2; see README.md for intentional departures and open decisions."@en .
+    owl:versionInfo "Development profile based on HDS CDM V2; see README.md."@en .
+
 
 # Core hds terms
 hds:Incident a owl:Class ;
     rdfs:label "Incident"@en ;
     rdfs:subClassOf schema:Event .
 
+# Incident-domain vocabulary (centralised core terms)
+# Use these concepts as values of hds:incidentDomain. An incident can have more than one domain.
+
+hds:incidentDomainScheme a skos:ConceptScheme ;
+    dcterms:title "HDS incident domains"@en ;
+    dcterms:description "A controlled vocabulary for classifying HDS incidents by domain. An incident may have multiple domains."@en ;
+    skos:hasTopConcept hds:environmental, hds:humanTrafficking,
+        hds:humanitarian, hds:humanRightsAbuse, hds:migration,
+        hds:military, hds:political, hds:sexualViolence .
+
+hds:environmental a skos:Concept ;
+    skos:prefLabel "Environmental event"@en ;
+    dcterms:description "An incident involving natural hazards, environmental degradation, or damage to ecosystems."@en ;
+    skos:inScheme hds:incidentDomainScheme .
+
+hds:humanTrafficking a skos:Concept ;
+    skos:prefLabel "Human trafficking"@en ;
+    dcterms:description "An incident involving the recruitment, movement, harbouring, or receipt of people for exploitation through coercion, deception, or abuse of vulnerability, including child trafficking for which such means are not required."@en ;
+    hds:applicableProperty hds:casualties ;
+    skos:inScheme hds:incidentDomainScheme .
+
+hds:humanitarian a skos:Concept ;
+    skos:prefLabel "Humanitarian event"@en ;
+    dcterms:description "An incident affecting people's safety, basic needs, or access to essential services that creates or worsens a need for humanitarian assistance."@en ;
+    hds:applicableProperty hds:casualties ;
+    skos:inScheme hds:incidentDomainScheme .
+
+hds:humanRightsAbuse a skos:Concept ;
+    skos:prefLabel "Human rights abuse"@en ;
+    dcterms:description "An incident involving reported harm to or infringement of people's human rights and fundamental freedoms."@en ;
+    hds:applicableProperty hds:casualties ;
+    skos:inScheme hds:incidentDomainScheme .
+
+hds:migration a skos:Concept ;
+    skos:prefLabel "Migration event"@en ;
+    dcterms:description "An incident related to the movement of people within a country or across borders, including displacement, transit, arrival, or return."@en ;
+    hds:applicableProperty hds:casualties ;
+    skos:inScheme hds:incidentDomainScheme .
+
+hds:military a skos:Concept ;
+    skos:prefLabel "Military event"@en ;
+    dcterms:description "An incident involving military operations, armed hostilities, or activities of armed forces or armed groups."@en ;
+    hds:applicableProperty hds:weaponsUsed, hds:casualties ;
+    skos:inScheme hds:incidentDomainScheme .
+
+hds:political a skos:Concept ;
+    skos:prefLabel "Political event"@en ;
+    dcterms:description "An incident related to governance, political participation, elections, or the exercise of political power."@en ;
+    hds:applicableProperty hds:outcome ;
+    skos:inScheme hds:incidentDomainScheme .
+
+hds:sexualViolence a skos:Concept ;
+    skos:prefLabel "Sexual violence"@en ;
+    dcterms:description "An incident involving a sexual act or attempted sexual act without freely given consent, including acts committed through force, threats, coercion, or abuse of power."@en ;
+    skos:inScheme hds:incidentDomainScheme .
+
+
 # Application specific terms (situation report)
 hds:Report a owl:Class ; 
     rdfs:label "Situation report"@en ;
-    rdfs:comment "A situation report may describe incidents using dcterms:subject. Individual incident records may be contained in a report using dcterms:isPartOf."@en .
+    rdfs:comment "Individual incident records may be contained in a situation report using dcterms:isPartOf from the incident to the report."@en .
 hds:Camp a owl:Class ;
     rdfs:label "IDP or refugee camp"@en ;
-    rdfs:subClassOf dcterms:Location .
+    schema:location hds:humanRightsAbuse, hds:humanitarian ;
+    rdfs:comment "The Camp class links to the human-rights-abuse and humanitarian domain concepts using schema:location in this HDS profile. Camp instances may separately reference geographical locations."@en .
 hds:MigrationRoute a owl:Class ;
     rdfs:label "Migration route"@en ;
-    rdfs:subClassOf dcterms:Location .
+    schema:location hds:humanTrafficking, hds:migration ;
+    rdfs:comment "The MigrationRoute class links to the human-trafficking and migration domain concepts using schema:location in this HDS profile. Route instances may separately reference geographical locations."@en .
+
 
 # Object properties
 hds:applicableProperty a owl:AnnotationProperty ;
     rdfs:label "applicable incident property"@en ;
     rdfs:comment "Links an incident-domain concept to an additional property applicable to incidents tagged with that domain. Values are recorded on incidents; this annotation does not impose required fields."@en .
 hds:involves a owl:ObjectProperty ; 
-    rdfs:label "involves"@en .
+    rdfs:label "involves"@en ;
+    rdfs:range prov:Agent .
 hds:incidentDomain a owl:ObjectProperty ;
     rdfs:label "incident domain"@en ;
-    rdfs:seeAlso hdsDomain:IncidentDomains .
+    rdfs:seeAlso hds:incidentDomainScheme .
 hds:reportedBy a owl:ObjectProperty ; 
-    rdfs:label "reported by"@en .
-hds:hasDataOwner a owl:ObjectProperty ; 
-    rdfs:label "has data owner"@en ;
-    rdfs:comment "Provisional HDS relationship to an agent recorded as the data owner. This does not identify the publisher, consent giver, or legal rights holder; the precise role needs agreement."@en .
-hds:hasDataUser a owl:ObjectProperty ; 
-    rdfs:label "has data user"@en ;
-    rdfs:comment "An agent recorded as an intended data user. This statement alone does not grant permission or establish an ODRL assignee role."@en .
-hds:hasRestriction a owl:ObjectProperty ; 
-    rdfs:label "has restriction"@en ;
-    rdfs:comment "Links to a documented usage restriction. The resource may use an appropriate restriction vocabulary, including DUO where suitable. This is distinct from an access status, license, or executable policy."@en .
+    rdfs:label "reported by"@en ;
+    rdfs:range prov:Agent .
 
 # Datatype properties
 hds:actorType a owl:DatatypeProperty ; 

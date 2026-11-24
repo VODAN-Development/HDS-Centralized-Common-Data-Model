@@ -1,0 +1,9 @@
+@prefix ex: <https://example.org/> .
+@prefix dpv: <https://w3id.org/dpv#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+ex:consent a dpv:Consent ;
+    dcterms:accessRights ex:agent .
+
+ex:agent a prov:Agent .
