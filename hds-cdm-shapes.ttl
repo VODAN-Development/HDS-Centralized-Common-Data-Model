@@ -208,3 +208,108 @@ hds:IncidentDomainConceptShape a sh:NodeShape ;
         sh:hasValue hds:incidentDomainScheme ;
         sh:message "Each incident domain must belong to hds:incidentDomainScheme."@en
     ] .
+
+
+# ---------------------------------------------------------------------------
+# SafeVoice additions: topic, record, controlled incident terms, journey, groups.
+# The controlled terms in sh:in are the values of the SafeVoice input form (config/UI_drop_downs.csv).
+# ---------------------------------------------------------------------------
+shapes:IncidentRecordingShape a sh:NodeShape ;
+    sh:targetClass hds:Incident ;
+    sh:property [ sh:path hds:informationSource ; sh:class hds:InformationSource ] ;
+    sh:property [ sh:path hds:incidentCharacteristic ; sh:class hds:IncidentCharacteristic ] ;
+    sh:property [ sh:path hds:victimDescriptor ; sh:class hds:VictimDescriptor ] ;
+    sh:property [ sh:path hds:victimLocation ; sh:class dcterms:Location ] ;
+    sh:property [ sh:path hds:hasJourney ; sh:class hds:Journey ] ;
+    sh:property [
+        sh:path hds:reportedAt ;
+        sh:maxCount 1 ;
+        sh:or ( [ sh:datatype xsd:dateTime ] [ sh:datatype xsd:date ] ) ;
+        sh:message "The reported time is a date or a date and time."@en
+    ] .
+
+shapes:TopicShape a sh:NodeShape ;
+    sh:targetClass hds:Topic ;
+    sh:property [ sh:path dcterms:title ; sh:node shapes:TextLiteral ; sh:maxCount 1 ] ;
+    sh:property [ sh:path hds:hasRecord ; sh:class hds:Record ] ;
+    sh:property [
+        sh:path dcterms:description ;
+        sh:node shapes:TextLiteral ;
+        sh:pattern "^\\s*(\\S+\\s+){0,249}(\\S+\\s*)?$" ;
+        sh:message "A topic description has at most 250 words."@en
+    ] .
+
+shapes:RecordShape a sh:NodeShape ;
+    sh:targetClass hds:Record ;
+    sh:property [ sh:path hds:recordNumber ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path hds:recordVersion ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path hds:author ; sh:class prov:Agent ; sh:maxCount 1 ] ;
+    sh:property [ sh:path hds:describesIncident ; sh:class hds:Incident ] ;
+    sh:property [ sh:path dcterms:created ; sh:datatype xsd:dateTime ; sh:maxCount 1 ] .
+
+shapes:InformationSourceShape a sh:NodeShape ;
+    sh:targetClass hds:InformationSource ;
+    sh:property [ sh:path hds:sourceType ; sh:datatype xsd:string ; sh:in ( "WhatsApp" "Phone conversation" "Personal meeting" "From another source" "Other" ) ];
+    sh:property shapes:Description .
+
+shapes:IncidentCharacteristicShape a sh:NodeShape ;
+    sh:targetClass hds:IncidentCharacteristic ;
+    sh:property [ sh:path hds:characteristic ; sh:datatype xsd:string ; sh:in ( "Refugee movement" "Abduction" "Ransom payment" "Human Trafficking" "Abuse" "Torture" "Captivity" "Extortion" "Forced transportation" "Disappearance" "Emergency situation" "Other" ) ];
+    sh:property shapes:Description .
+
+shapes:VictimDescriptorShape a sh:NodeShape ;
+    sh:targetClass hds:VictimDescriptor ;
+    sh:property [ sh:path hds:victimCategory ; sh:datatype xsd:string ; sh:in ( "Refugee" "Migrant" "Family" "With adolescent child(ren)" "With young child(ren)" "With infant(s)" "With elderly" ) ];
+    sh:property shapes:Description .
+
+shapes:ShelterShape a sh:NodeShape ;
+    sh:targetClass dcterms:Location ;
+    sh:property [ sh:path hds:shelterType ; sh:datatype xsd:string ; sh:in ( "Refugee camp" "IDP camp" "Police station" "Prison" "Private house" "Hospital" "Warehouse" "Other" ) ];
+    sh:property [ sh:path hds:shelterDescription ; sh:node shapes:TextLiteral ] .
+
+shapes:JourneyShape a sh:NodeShape ;
+    sh:targetClass hds:Journey ;
+    sh:property [ sh:path hds:journeyStart ; sh:class dcterms:Location ] ;
+    sh:property [ sh:path hds:journeyEnd ; sh:class dcterms:Location ] ;
+    sh:property shapes:Description .
+
+shapes:VictimGroupShape a sh:NodeShape ;
+    sh:targetClass hds:VictimGroup ;
+    sh:property [ sh:path hds:groupSize ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path hds:maleCount ; sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path hds:femaleCount ; sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path hds:otherGenderCount ; sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:maxCount 1 ] ;
+    sh:property [ sh:path hds:ageRange ; sh:datatype xsd:string ; sh:in ( "Under 5" "5-11" "12-17" "18-24" "25-39" "40-59" "60 and over" ) ];
+    sh:property [ sh:path hds:nationality ; sh:datatype xsd:string ] ;
+    sh:property shapes:Description .
+
+shapes:PerpetratorShape a sh:NodeShape ;
+    sh:targetClass hds:Perpetrator ;
+    sh:property [ sh:path dcterms:isPartOf ; sh:class hds:PerpetratorGroup ] ;
+    sh:property [ sh:path hds:perpetratorCategory ; sh:datatype xsd:string ; sh:in ( "Human trafficking agent(s)" "NGOs" "Transporters" "Police" "Other" ) ];
+    sh:property [ sh:path hds:nationality ; sh:datatype xsd:string ] .
+
+shapes:PerpetratorGroupShape a sh:NodeShape ;
+    sh:targetClass hds:PerpetratorGroup ;
+    sh:property shapes:Description .
+
+# ---------------------------------------------------------------------------
+# Geographic description of a location (SafeVoice proposal). Reuses Schema.org terms; all optional.
+# Used for the victim location and for the start and end of a journey.
+# ---------------------------------------------------------------------------
+shapes:LocationGeographyShape a sh:NodeShape ;
+    sh:targetClass dcterms:Location ;
+    sh:property [ sh:path schema:addressCountry ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path schema:addressRegion ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path schema:addressLocality ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path schema:streetAddress ; sh:datatype xsd:string ] ;
+    sh:property [
+        sh:path schema:latitude ; sh:maxCount 1 ;
+        sh:or ( [ sh:datatype xsd:float ] [ sh:datatype xsd:double ] [ sh:datatype xsd:decimal ] ) ;
+        sh:minInclusive -90 ; sh:maxInclusive 90
+    ] ;
+    sh:property [
+        sh:path schema:longitude ; sh:maxCount 1 ;
+        sh:or ( [ sh:datatype xsd:float ] [ sh:datatype xsd:double ] [ sh:datatype xsd:decimal ] ) ;
+        sh:minInclusive -180 ; sh:maxInclusive 180
+    ] .

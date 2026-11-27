@@ -37,7 +37,8 @@ hds:environmental a skos:Concept ;
 hds:humanTrafficking a skos:Concept ;
     skos:prefLabel "Human trafficking"@en ;
     dcterms:description "An incident involving the recruitment, movement, harbouring, or receipt of people for exploitation through coercion, deception, or abuse of vulnerability, including child trafficking for which such means are not required."@en ;
-    hds:applicableProperty hds:casualties ;
+    hds:applicableProperty hds:casualties, hds:reportedAt, hds:informationSource, hds:incidentCharacteristic,
+        hds:victimDescriptor, hds:victimLocation, hds:hasJourney ;
     skos:inScheme hds:incidentDomainScheme .
 
 hds:humanitarian a skos:Concept ;
@@ -120,3 +121,123 @@ hds:casualties a owl:DatatypeProperty ;
     rdfs:comment "An incident casualty count. Whether this counts deaths, injuries, or both remains to be agreed. Omit an unknown count rather than representing it as zero."@en .
 hds:weaponsUsed a owl:DatatypeProperty ; 
     rdfs:label "weapons used"@en .
+
+
+# ---------------------------------------------------------------------------
+# Topic and record (SafeVoice proposal)
+# A topic names a series of records. A record only carries metadata (number, version, time, author);
+# the content of a report is described by the incident the record points to.
+# ---------------------------------------------------------------------------
+hds:Topic a owl:Class ;
+    rdfs:label "Topic"@en ;
+    rdfs:comment "A named series of records. The description is free text of at most 250 words, written when the topic is created."@en .
+hds:Record a owl:Class ;
+    rdfs:label "Record"@en ;
+    rdfs:comment "Metadata of one version of a report inside a topic. It holds no incident content: see hds:describesIncident."@en .
+hds:hasRecord a owl:ObjectProperty ;
+    rdfs:label "has record"@en ;
+    rdfs:domain hds:Topic ;
+    rdfs:range hds:Record .
+hds:describesIncident a owl:ObjectProperty ;
+    rdfs:label "describes incident"@en ;
+    rdfs:domain hds:Record ;
+    rdfs:range hds:Incident .
+hds:author a owl:ObjectProperty ;
+    rdfs:label "author"@en ;
+    rdfs:comment "The agent (user name) that generated the record. Set by the system, never typed."@en ;
+    rdfs:domain hds:Record ;
+    rdfs:range prov:Agent .
+hds:recordNumber a owl:DatatypeProperty ;
+    rdfs:label "record number"@en ;
+    rdfs:comment "Succession number of the record: every new record in a topic gets the next number."@en ;
+    rdfs:domain hds:Record .
+hds:recordVersion a owl:DatatypeProperty ;
+    rdfs:label "record version"@en ;
+    rdfs:comment "Version number related to the topic. Current proposal: 1 for an original record, one more than the corrected record for each correction. Open question: the exact meaning is still to be confirmed with the course team."@en ;
+    rdfs:domain hds:Record .
+
+# ---------------------------------------------------------------------------
+# Incident properties (SafeVoice proposal). Map them to domains with hds:applicableProperty.
+# ---------------------------------------------------------------------------
+hds:reportedAt a owl:DatatypeProperty ;
+    rdfs:label "reported at"@en ;
+    rdfs:comment "When the incident was reported. A date (xsd:date) or a date and time (xsd:dateTime). This is not the time of the incident (schema:startDate) and not the time the record was generated (dcterms:created); it can differ from both."@en ;
+    rdfs:domain hds:Incident .
+hds:InformationSource a owl:Class ;
+    rdfs:label "Information source"@en ;
+    rdfs:comment "How the information about an incident was obtained, for example a phone conversation. An incident can have several."@en .
+hds:IncidentCharacteristic a owl:Class ;
+    rdfs:label "Incident characteristic"@en ;
+    rdfs:comment "One controlled term that describes what happened, for example abduction or ransom payment."@en .
+hds:VictimDescriptor a owl:Class ;
+    rdfs:label "Victim descriptor"@en ;
+    rdfs:comment "One controlled term that describes who the victims are, for example refugee or family with infants."@en .
+hds:Journey a owl:Class ;
+    rdfs:label "Journey"@en ;
+    rdfs:comment "The journey on which an incident is reported: a description, where the last movement started and where it ended."@en .
+hds:informationSource a owl:ObjectProperty ;
+    rdfs:label "information source"@en ;
+    rdfs:domain hds:Incident ; rdfs:range hds:InformationSource .
+hds:incidentCharacteristic a owl:ObjectProperty ;
+    rdfs:label "incident characteristic"@en ;
+    rdfs:domain hds:Incident ; rdfs:range hds:IncidentCharacteristic .
+hds:victimDescriptor a owl:ObjectProperty ;
+    rdfs:label "victim descriptor"@en ;
+    rdfs:domain hds:Incident ; rdfs:range hds:VictimDescriptor .
+hds:victimLocation a owl:ObjectProperty ;
+    rdfs:label "victim location"@en ;
+    rdfs:comment "Where the victims are when they report. Use the same location resource for the nature of the shelter."@en ;
+    rdfs:subPropertyOf schema:location ;
+    rdfs:domain hds:Incident .
+hds:hasJourney a owl:ObjectProperty ;
+    rdfs:label "has journey"@en ;
+    rdfs:domain hds:Incident ; rdfs:range hds:Journey .
+hds:journeyStart a owl:ObjectProperty ;
+    rdfs:label "start of the last movement"@en ;
+    rdfs:subPropertyOf schema:location ;
+    rdfs:domain hds:Journey .
+hds:journeyEnd a owl:ObjectProperty ;
+    rdfs:label "end of the last movement"@en ;
+    rdfs:subPropertyOf schema:location ;
+    rdfs:domain hds:Journey .
+hds:sourceType a owl:DatatypeProperty ;
+    rdfs:label "source type"@en ;
+    rdfs:comment "Controlled term: WhatsApp, phone conversation, personal meeting, from another source or other (describe it)."@en .
+hds:characteristic a owl:DatatypeProperty ;
+    rdfs:label "characteristic"@en .
+hds:victimCategory a owl:DatatypeProperty ;
+    rdfs:label "victim category"@en .
+hds:shelterType a owl:DatatypeProperty ;
+    rdfs:label "shelter type"@en ;
+    rdfs:comment "Nature of the shelter at the location where the victims are, for example refugee camp, police station or prison."@en .
+hds:shelterDescription a owl:DatatypeProperty ;
+    rdfs:label "shelter description"@en .
+
+# ---------------------------------------------------------------------------
+# Groups of people (SafeVoice proposal)
+# ---------------------------------------------------------------------------
+hds:VictimGroup a owl:Class ;
+    rdfs:label "Victim group"@en ;
+    rdfs:comment "The group of victims an incident is about. Use hds:actorType \"victim\"."@en ;
+    rdfs:subClassOf prov:Agent .
+hds:PerpetratorGroup a owl:Class ;
+    rdfs:label "Perpetrator group"@en ;
+    rdfs:comment "All perpetrators of an incident, with one free text description. Members are hds:Perpetrator resources linked with dcterms:isPartOf. Use hds:actorType \"perpetrator\"."@en ;
+    rdfs:subClassOf prov:Agent .
+hds:Perpetrator a owl:Class ;
+    rdfs:label "Perpetrator"@en ;
+    rdfs:comment "One kind of perpetrator, for example police or transporters, optionally with a nationality."@en ;
+    rdfs:subClassOf prov:Agent .
+hds:groupSize a owl:DatatypeProperty ; rdfs:label "number of people in the group"@en ;
+    rdfs:comment "Size of a victim group. When an incident has one victim group, hds:victimCount has the same value. The gender counts may not add up to more than this number (checked by the application)."@en .
+hds:maleCount a owl:DatatypeProperty ; rdfs:label "number of males"@en .
+hds:femaleCount a owl:DatatypeProperty ; rdfs:label "number of females"@en .
+hds:otherGenderCount a owl:DatatypeProperty ; rdfs:label "number of people of another gender"@en .
+hds:ageRange a owl:DatatypeProperty ;
+    rdfs:label "age range"@en ;
+    rdfs:comment "Controlled age range of people in the group. Repeatable."@en .
+hds:nationality a owl:DatatypeProperty ;
+    rdfs:label "nationality"@en ;
+    rdfs:comment "Nationality of a person or group. Repeatable for a group."@en .
+hds:perpetratorCategory a owl:DatatypeProperty ;
+    rdfs:label "perpetrator category"@en .
